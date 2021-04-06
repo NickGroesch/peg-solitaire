@@ -4,7 +4,7 @@ import Pegboard from "./components/Pegboard"
 
 function App() {
   return (
-    <div style={{ height: "100vh" }} id='background'>
+    <div style={{ height: "100vh", width: "100vw" }} id='background'>
       <Pegboard />
     </div>
 
