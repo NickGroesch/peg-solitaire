@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const triangles = []
 const holes = []
@@ -35,21 +35,57 @@ const legal = [ //index is STARTS, values are [JUMPS, LANDS]
 
 
 function Pegboard() {
+    const [pegs, setPegs] = useState({
+        peg0: 0,
+        peg1: 1,
+        peg2: 2,
+        peg3: 3,
+        // peg4: 4,
+        // peg5: 5,
+        // peg6: 6,
+        // peg7: 7,
+        // peg8: 8,
+        // peg9: 9,
+        // peg10: 10,
+        // peg11: 11,
+        // peg12: 12,
+        // peg13: 13,
+        // peg14: 14
+    })
+    const [moves, setMoves] = useState([])
+
+    const showLegal = index => {
+        console.log(legal[index].map(arr => `STARTS ${index} JUMPS ${arr[0]} LANDS ${arr[1]}`).join("\n"))
+    }
+
     return (
         <svg viewBox="0 0 1000 1000">
             <polygon points="500,0 0,866 1000,866" fill="lightgreen" />
-            <polygon points="100,692.8 0,866 200,866" fill="lightgreen" stroke="red" />
+            <polygon points="0,866 1000,866 1000,906 0,906" fill="lightblue" />
             {triangles.map((tri, index) => (
                 <polygon
                     key={index} //this list is: static, items lack id's, will never be reordered //https://robinpokorny.medium.com/index-as-a-key-is-an-anti-pattern-e0349aece318
                     points={tri.map(point => point.join(",")).join(" ")}
                     fill="pink"
                     stroke="magenta"
+                    onClick={() => showLegal(index)}
                 />))}
             {holes.map((center, index) => (
                 <circle key={index} cx={center[0]} cy={center[1]} r={20} fill="goldenrod" />
             ))}
-            <polygon points="0,866 1000,866 1000,906 0,906" fill="lightblue" />
+            {Object.keys(pegs).map(peg => {
+                console.log(peg)
+                const center = holes[pegs[peg]]
+                const cx = center[0]
+                const cy = center[1]
+                return (<>
+                    <polygon key={`${peg}rec`} points={
+                        `${cx - 20},${cy} ${cx + 20},${cy} ${cx + 20},${cy - 40} ${cx - 20},${cy - 40}`
+                    } fill="brown" />
+                    <circle key={peg} cx={cx} cy={cy} r={20} fill="brown" />
+                    <circle key={`${peg}top`} cx={cx} cy={cy - 40} r={20} fill="brown" />
+                </>)
+            })}
 
 
         </svg>
