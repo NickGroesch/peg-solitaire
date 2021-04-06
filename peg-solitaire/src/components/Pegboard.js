@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import Peg from "./Peg"
 const triangles = []
 const holes = []
@@ -32,26 +32,46 @@ const legal = [ //index is STARTS, values are [JUMPS, LANDS]
     [[10, 6], [11, 8]],
     [[12, 9], [13, 11]]
 ]
+function getKeyByValue(object, value) {//https://stackoverflow.com/questions/9907419/how-to-get-a-key-in-a-javascript-object-by-its-value
+    return Object.keys(object).find(key => object[key] === value);
+}
 
 
 function Pegboard() {
-    const [pegs, setPegs] = useState({ // Where the unique pegs are now
-        peg0: 0,
-        peg1: 1,
-        peg2: 2,
-        peg3: 3,
-        // peg4: 4,
-        // peg5: 5,
-        peg6: 6,
-        peg7: 7,
-        // peg8: 8,
-        peg9: 9,
-        // peg10: 10,
-        // peg11: 11,
-        // peg12: 12,
-        // peg13: 13,
-        // peg14: 14
-    })
+    const [history, setHistory] = useState([])
+    const [pegs, dispatch] = useReducer(
+        (state, [starts, lands]) => {
+
+            const dontMessWithState = { ...state }
+            const theMove = legal[starts].filter(move => move[1] == lands)[0]
+            const jumps = theMove[0]
+            console.log(starts, jumps, lands)
+            //find the peg being jumped
+            const beingJumped = getKeyByValue(dontMessWithState, jumps)
+            //delete the peg being jumped
+            delete dontMessWithState[beingJumped]
+            //change the jumping pegs value
+            const jumpingPeg = getKeyByValue(dontMessWithState, starts)
+            dontMessWithState[jumpingPeg] = lands
+            return dontMessWithState
+        },
+        { // Where the unique pegs are now
+            peg0: 0,
+            peg1: 1,
+            peg2: 2,
+            peg3: 3,
+            // peg4: 4,
+            // peg5: 5,
+            peg6: 6,
+            peg7: 7,
+            // peg8: 8,
+            peg9: 9,
+            // peg10: 10,
+            // peg11: 11,
+            // peg12: 12,
+            // peg13: 13,
+            // peg14: 14
+        })
     const [moves, setMoves] = useState([]) //available moves based on selected peg
 
     //dragging state
@@ -59,17 +79,17 @@ function Pegboard() {
     const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
     const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
-    useEffect(() => {
-        // const releasement = (e) => {
-        //     console.log("I am released")
-        //     setDragging(-1);
-        //     setMoves([])
-        //     setCoordinates({ x: 0, y: 0 })
-        //     setOrigin({ x: 0, y: 0 })
-        // }
-        // document.addEventListener("mouseup", releasement)
-        // return document.removeEventListener("mouseup", releasement)
-    }, [dragging])
+    // useEffect(() => {
+    //     // const releasement = (e) => {
+    //     //     console.log("I am released")
+    //     //     setDragging(-1);
+    //     //     setMoves([])
+    //     //     setCoordinates({ x: 0, y: 0 })
+    //     //     setOrigin({ x: 0, y: 0 })
+    //     // }
+    //     // document.addEventListener("mouseup", releasement)
+    //     // return document.removeEventListener("mouseup", releasement)
+    // }, [dragging])
 
     const handleDown = (e, index) => {
         console.log("HD", index)
@@ -108,6 +128,10 @@ function Pegboard() {
         setCoordinates({ x: 0, y: 0 })
         setOrigin({ x: 0, y: 0 })
     }
+    const dropHere = (index) => {
+        console.log("kapow", dragging, index)
+        dispatch([dragging, index])
+    }
 
     return (
         <svg viewBox="0 0 1000 1000"
@@ -118,18 +142,30 @@ function Pegboard() {
                 fill="lightgreen"
             />
             <polygon points="0,866 1000,866 1000,906 0,906" fill="lightblue" />
-            {triangles.map((tri, index) => (
-                <polygon
-                    key={index} //this list is: static, items lack id's, will never be reordered //https://robinpokorny.medium.com/index-as-a-key-is-an-anti-pattern-e0349aece318
-                    points={tri.map(point => point.join(",")).join(" ")}
-                    fill={moves.includes(index) ? "green" : "pink"}
-                    stroke="magenta"
-                    //onClick={() => showLegal(index)}
-                    onMouseUp={() => { console.log("that tickles ", index) }}
-                />))}
-            {holes.map((center, index) => (
-                <circle key={index} cx={center[0]} cy={center[1]} r={20} fill="goldenrod" />
-            ))}
+            {triangles.map((tri, index) => {
+                const isAMove = moves.includes(index)
+                const center = holes[index]
+                return (
+                    <g
+                        key={index}
+                        //this list is: static, items lack id's, will never be reordered 
+                        //https://robinpokorny.medium.com/index-as-a-key-is-an-anti-pattern-e0349aece318
+                        onMouseUp={isAMove ? () => dropHere(index) : () => { }}
+                    >
+                        <polygon
+                            points={tri.map(point => point.join(",")).join(" ")}
+                            fill={isAMove ? "green" : "pink"}
+                            stroke="magenta"
+                        />
+                        <circle
+                            cx={center[0]}
+                            cy={center[1]}
+                            r={20}
+                            fill="goldenrod"
+                        />
+                    </g>)
+            })}
+
             {Object.keys(pegs).map(peg => {
                 const index = pegs[peg]
                 const center = holes[index]
@@ -147,7 +183,6 @@ function Pegboard() {
                     handleUp={handleUp}
                 />)
             })}
-
 
         </svg>
     );
