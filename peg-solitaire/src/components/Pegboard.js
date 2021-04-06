@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import Peg from "./Peg"
 const triangles = []
 const holes = []
 const height = 866
@@ -35,7 +35,7 @@ const legal = [ //index is STARTS, values are [JUMPS, LANDS]
 
 
 function Pegboard() {
-    const [pegs, setPegs] = useState({
+    const [pegs, setPegs] = useState({ // Where the unique pegs are now
         peg0: 0,
         peg1: 1,
         peg2: 2,
@@ -52,12 +52,36 @@ function Pegboard() {
         // peg13: 13,
         // peg14: 14
     })
-    const [moves, setMoves] = useState([])
+    const [moves, setMoves] = useState([]) //available moves based on selected peg
+    //dragging state
+    const [dragging, setDragging] = useState(-1);
+    const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
+    const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
     const showLegal = index => {
         console.log(legal[index].map(arr => `STARTS ${index} JUMPS ${arr[0]} LANDS ${arr[1]}`).join("\n"))
     }
 
+    const handleDown = (e, index) => {
+        console.log("HD", index)
+        setOrigin({
+            x: e.clientX,
+            y: e.clientY
+        });
+        setDragging(index);
+    }
+    const handleMove = e => {
+        if (dragging > -1) {
+            setCoordinates({
+                x: e.clientX - origin.x,
+                y: e.clientY - origin.y,
+            });
+        }
+
+    }
+    const handleUp = e => {
+        setDragging(-1);
+    }
     return (
         <svg viewBox="0 0 1000 1000">
             <polygon points="500,0 0,866 1000,866" fill="lightgreen" />
@@ -68,23 +92,24 @@ function Pegboard() {
                     points={tri.map(point => point.join(",")).join(" ")}
                     fill="pink"
                     stroke="magenta"
-                    onClick={() => showLegal(index)}
+                //onClick={() => showLegal(index)}
                 />))}
             {holes.map((center, index) => (
                 <circle key={index} cx={center[0]} cy={center[1]} r={20} fill="goldenrod" />
             ))}
             {Object.keys(pegs).map(peg => {
-                console.log(peg)
-                const center = holes[pegs[peg]]
+                const index = pegs[peg]
+                const center = holes[index]
                 const cx = center[0]
                 const cy = center[1]
-                return (<>
-                    <polygon key={`${peg}rec`} points={
-                        `${cx - 20},${cy} ${cx + 20},${cy} ${cx + 20},${cy - 40} ${cx - 20},${cy - 40}`
-                    } fill="brown" />
-                    <circle key={peg} cx={cx} cy={cy} r={20} fill="brown" />
-                    <circle key={`${peg}top`} cx={cx} cy={cy - 40} r={20} fill="brown" />
-                </>)
+                return (<Peg
+                    cx={cx}
+                    cy={cy}
+                    peg={peg}
+                    index={index}
+                    handleDown={handleDown}
+                    handleMove={handleMove}
+                    handleUp={handleUp} />)
             })}
 
 
