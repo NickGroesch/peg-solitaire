@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Peg from "./Peg"
 const triangles = []
 const holes = []
@@ -42,10 +42,10 @@ function Pegboard() {
         peg3: 3,
         // peg4: 4,
         // peg5: 5,
-        // peg6: 6,
-        // peg7: 7,
+        peg6: 6,
+        peg7: 7,
         // peg8: 8,
-        // peg9: 9,
+        peg9: 9,
         // peg10: 10,
         // peg11: 11,
         // peg12: 12,
@@ -53,14 +53,23 @@ function Pegboard() {
         // peg14: 14
     })
     const [moves, setMoves] = useState([]) //available moves based on selected peg
+
     //dragging state
     const [dragging, setDragging] = useState(-1);
     const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
     const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
-    // const showLegal = index => {
-    //     console.log(legal[index].map(arr => `STARTS ${index} JUMPS ${arr[0]} LANDS ${arr[1]}`).join("\n"))
-    // }
+    useEffect(() => {
+        // const releasement = (e) => {
+        //     console.log("I am released")
+        //     setDragging(-1);
+        //     setMoves([])
+        //     setCoordinates({ x: 0, y: 0 })
+        //     setOrigin({ x: 0, y: 0 })
+        // }
+        // document.addEventListener("mouseup", releasement)
+        // return document.removeEventListener("mouseup", releasement)
+    }, [dragging])
 
     const handleDown = (e, index) => {
         console.log("HD", index)
@@ -80,8 +89,9 @@ function Pegboard() {
             }
             return false
         })
-        console.log(legitMoves)
+        setMoves(legitMoves.map(move => move[1]))
     }
+
     const handleMove = e => {
         if (dragging > -1) {
             setCoordinates({
@@ -90,19 +100,29 @@ function Pegboard() {
             });
         }
     }
+
     const handleUp = (e) => {
+        console.log("tickle bubble test")
         setDragging(-1);
+        setMoves([])
+        setCoordinates({ x: 0, y: 0 })
+        setOrigin({ x: 0, y: 0 })
     }
 
     return (
-        <svg viewBox="0 0 1000 1000">
-            <polygon points="500,0 0,866 1000,866" fill="lightgreen" />
+        <svg viewBox="0 0 1000 1000"
+            onMouseUp={handleUp}
+            onMouseMove={handleMove}
+        >
+            <polygon points="500,0 0,866 1000,866"
+                fill="lightgreen"
+            />
             <polygon points="0,866 1000,866 1000,906 0,906" fill="lightblue" />
             {triangles.map((tri, index) => (
                 <polygon
                     key={index} //this list is: static, items lack id's, will never be reordered //https://robinpokorny.medium.com/index-as-a-key-is-an-anti-pattern-e0349aece318
                     points={tri.map(point => point.join(",")).join(" ")}
-                    fill="pink"
+                    fill={moves.includes(index) ? "green" : "pink"}
                     stroke="magenta"
                     //onClick={() => showLegal(index)}
                     onMouseUp={() => { console.log("that tickles ", index) }}
@@ -119,6 +139,7 @@ function Pegboard() {
                 return (<Peg
                     cx={cx}
                     cy={cy}
+                    key={peg}
                     peg={peg}
                     index={index}
                     handleDown={handleDown}

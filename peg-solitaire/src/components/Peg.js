@@ -1,20 +1,13 @@
 import React from 'react';
 
-function Peg({ cy, cx, peg, index, handleDown, handleMove, handleUp }) {
+function Peg({ cy, cx, peg, index, handleDown }) {
     const mouseDown = (e) => {
         handleDown(e, index)
     }
-    const mouseMove = (e) => {
-        handleMove(e)
-    }
-    const mouseUp = (e) => {
-        handleUp(e)
-    }
+
     return (
         <g
             onMouseDown={mouseDown}
-            onMouseMove={mouseMove}
-            onMouseUp={mouseUp}
             fill="brown"
         >
             <polygon
