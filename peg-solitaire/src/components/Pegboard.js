@@ -58,9 +58,9 @@ function Pegboard() {
     const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
     const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
-    const showLegal = index => {
-        console.log(legal[index].map(arr => `STARTS ${index} JUMPS ${arr[0]} LANDS ${arr[1]}`).join("\n"))
-    }
+    // const showLegal = index => {
+    //     console.log(legal[index].map(arr => `STARTS ${index} JUMPS ${arr[0]} LANDS ${arr[1]}`).join("\n"))
+    // }
 
     const handleDown = (e, index) => {
         console.log("HD", index)
@@ -69,6 +69,18 @@ function Pegboard() {
             y: e.clientY
         });
         setDragging(index);
+        const optionalMoves = legal[index]
+        const legitMoves = optionalMoves.filter(move => {
+            const jumps = move[0]
+            const lands = move[1]
+            if (Object.values(pegs).includes(jumps)) {
+                if (!Object.values(pegs).includes(lands)) {
+                    return true
+                }
+            }
+            return false
+        })
+        console.log(legitMoves)
     }
     const handleMove = e => {
         if (dragging > -1) {
@@ -77,11 +89,11 @@ function Pegboard() {
                 y: e.clientY - origin.y,
             });
         }
-
     }
-    const handleUp = e => {
+    const handleUp = (e) => {
         setDragging(-1);
     }
+
     return (
         <svg viewBox="0 0 1000 1000">
             <polygon points="500,0 0,866 1000,866" fill="lightgreen" />
@@ -92,7 +104,8 @@ function Pegboard() {
                     points={tri.map(point => point.join(",")).join(" ")}
                     fill="pink"
                     stroke="magenta"
-                //onClick={() => showLegal(index)}
+                    //onClick={() => showLegal(index)}
+                    onMouseUp={() => { console.log("that tickles ", index) }}
                 />))}
             {holes.map((center, index) => (
                 <circle key={index} cx={center[0]} cy={center[1]} r={20} fill="goldenrod" />
@@ -100,8 +113,9 @@ function Pegboard() {
             {Object.keys(pegs).map(peg => {
                 const index = pegs[peg]
                 const center = holes[index]
-                const cx = center[0]
-                const cy = center[1]
+                const isTheOne = dragging == index
+                const cx = isTheOne ? center[0] + coordinates.x : center[0]
+                const cy = isTheOne ? center[1] + coordinates.y : center[1]
                 return (<Peg
                     cx={cx}
                     cy={cy}
@@ -109,7 +123,8 @@ function Pegboard() {
                     index={index}
                     handleDown={handleDown}
                     handleMove={handleMove}
-                    handleUp={handleUp} />)
+                    handleUp={handleUp}
+                />)
             })}
 
 
