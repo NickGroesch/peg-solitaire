@@ -1,6 +1,7 @@
 import React from 'react';
 
 const triangles = []
+const holes = []
 const height = 866
 const fifthHigh = height / 5
 for (let yDex = 0; yDex < 5; yDex++) {
@@ -10,7 +11,7 @@ for (let yDex = 0; yDex < 5; yDex++) {
             [(100 * yDex) + (xDex + 1) * 200, height - (fifthHigh * yDex)],
             [(100 * yDex) + xDex * 200 + 100, height - (fifthHigh * (yDex + 1))]
         ])
-
+        holes.push([(100 * yDex) + xDex * 200 + 100, height - (fifthHigh * yDex) - 66.1])
     }
 }
 console.log(triangles)
@@ -28,6 +29,9 @@ function Pegboard() {
                     fill="pink"
                     stroke="magenta"
                 />))}
+            {holes.map(center => (
+                <circle cx={center[0]} cy={center[1]} r={20} fill="goldenrod" />
+            ))}
             <polygon points="0,866 1000,866 1000,906 0,906" fill="lightblue" />
 
 
